@@ -35,12 +35,11 @@ class Calendar extends DB_Connect{
         $this->_startDay =  (int)date('w', $ts);
     }
 
-
     private function _loadEventData($id = NULL){
+
         $sql = "SELECT
                 `event_id`, `event_title`, `event_desc`, `event_start`, `event_end`
                 FROM `events`";
-
 
         if (!empty($id)){
             $sql .= "WHERE `event_id` = :id LIMIT 1";
@@ -67,5 +66,21 @@ class Calendar extends DB_Connect{
         catch (Exception $e){
             die($e->getMessage());
         }
+    }
+    private function _createEventObj(){
+
+        $arr = $this->_loadEventData();
+
+        $events = array();
+        foreach ($arr as $event){
+            $day = date('j', strtotime($event['event_start']));
+
+            try{
+                $events[$day][] = new Event($event);
+            }catch (Exception $e){
+                die ($e->getMessage());
+            }
+        }
+        return $events;
     }
 }
