@@ -1,6 +1,6 @@
 <?php
-
 declare(strict_types=1);
+ini_set('display_errors', '1');
 
 include_once 'class.DB_Connect.inc.php';
 
@@ -35,6 +35,7 @@ class Calendar extends DB_Connect{
         $this->_startDay =  (int)date('w', $ts);
     }
 
+
     private function _loadEventData($id = NULL){
         $sql = "SELECT
                 `event_id`, `event_title`, `event_desc`, `event_start`, `event_end`
@@ -49,7 +50,7 @@ class Calendar extends DB_Connect{
             $start_date =date('Y-m-d H:i:s', $start_ts);
             $end_date = date('Y-m-d H:i:s', $end_ts);
 
-            $sql .= "WHERE `event_start` BEETWEN '$start_date' AND '$end_date' ORDER BY `event_start`";
+            $sql .= "WHERE `event_start` BETWEEN '$start_date' AND '$end_date' ORDER BY `event_start`";
         }
         try{
             $stmt = $this->db->prepare($sql);
@@ -59,6 +60,7 @@ class Calendar extends DB_Connect{
             }
             $stmt->execute();
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            var_dump($result);
             $stmt->closeCursor();
             return $result;
         }
