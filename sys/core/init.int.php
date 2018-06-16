@@ -8,9 +8,9 @@ foreach ($C as $name => $val){
     define($name, $val);
 }
 
-$dns = "mysql:host=" . DB_HOST . ";dbname" . DB_NAME;
-$dbo = new PDO($dns, DB_USER, DB_PASS);
-$dbo->query("SET NAME 'utf8'");
+$dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME;
+$dbo = new PDO($dsn, DB_USER, DB_PASS);
+$dbo->query("SET NAMES 'utf8'");
 
 function __autoload($class) {
     $filename = "../sys/class/class.". $class .".inc.php";
