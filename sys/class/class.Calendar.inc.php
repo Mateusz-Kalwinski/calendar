@@ -83,4 +83,18 @@ class Calendar extends DB_Connect{
         }
         return $events;
     }
+    public function buildCalendar(){
+
+        $cal_month = date('F Y', strtotime($this->_useDate));
+
+        define('WEEKDAYS', array('Nd', 'Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'So'));
+
+        $html = "\n\t<h2>$cal_month</h2>";
+        for ( $d=0, $labels=NULL; $d<7; ++$d ) {
+            $labels .= "\n\t\t<li>" . WEEKDAYS[$d] . "</li>";
+        }
+        $html .="\n\t<ul class='weekdays'>$labels\n\t</ul>";
+
+        return $html;
+    }
 }
