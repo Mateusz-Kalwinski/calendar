@@ -59,7 +59,6 @@ class Calendar extends DB_Connect{
             }
             $stmt->execute();
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            var_dump($result);
             $stmt->closeCursor();
             return $result;
         }
@@ -83,18 +82,99 @@ class Calendar extends DB_Connect{
         }
         return $events;
     }
-    public function buildCalendar(){
+    public function buildCalendar()
+    {
 
         $cal_month = date('F Y', strtotime($this->_useDate));
+        define('WEEKDAYS', array('Nd', 'Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So'));
 
-        define('WEEKDAYS', array('Nd', 'Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'So'));
-
-        $html = "\n\t<h2>$cal_month</h2>";
-        for ( $d=0, $labels=NULL; $d<7; ++$d ) {
-            $labels .= "\n\t\t<li>" . WEEKDAYS[$d] . "</li>";
+        $html = "\n\t<h2>$cal_month</h2><table>";
+        for ( $d=0, $labels=NULL; $d<7; ++$d )
+        {
+            $labels .= "<td class='weekdays'>" . WEEKDAYS[$d] . "</td>";
         }
-        $html .="\n\t<ul class='weekdays'>$labels\n\t</ul>";
+        $html .=
+             $labels . "</tr>";
+        $events = $this->_createEventObj();
+
+        $html .= "<tr>";
+        for ( $i=1, $c=1, $t=date('j'), $m=date('m'), $y=date('Y');
+              $c<=$this->_daysInMonth; ++$i )
+        {
+            $class = $i<=$this->_startDay ? "fill" : NULL;
+
+            if ( $c==$t && $m==$this->_m && $y==$this->_y )
+            {
+                $class = " today";
+            }
+
+            $ls = sprintf("<td class=\"days%s\">", $class);
+            $le = "</td>";
+            $event_info = NULL;
+
+            if ( $this->_startDay<$i && $this->_daysInMonth>=$c)
+            {
+                if ( isset($events[$c]) )
+                {
+                    foreach ( $events[$c] as $event )
+                    {
+                        $link = '<a class="event" href="view.php?event_id='
+                            . $event->id . '">' . $event->title
+                            . '</a>';
+                        $event_info .= "$link";
+                    }
+                }
+
+                $date = sprintf("\n\t\t\t<strong>%02d</strong>",$c++);
+            }
+            else { $date="&nbsp;"; }
+
+            $wrap = $i!=0 && $i%7==0 ? "</tr><tr>" : NULL;
+
+            $html .= $ls . $date . $event_info . $le . $wrap;
+        }
+
+        while ( $i%7!=1 )
+        {
+            $html .= "<td class=\"fill\">&nbsp;</td>";
+            ++$i;
+        }
+
+        $html .= "</tr></table>";
 
         return $html;
+    }
+
+    public function displayEvent($id){
+        if (empty($id)){
+            return NULL;
+        }
+
+        $id = preg_replace('/[^0-9]/', '', $id);
+
+        $event = $this->_loadEventById($id);
+
+        $ts = strtotime($event->start);
+        $date = date('F d, Y', $ts);
+        $start = date('d:ia', $ts);
+        $end = date('g:ia', strtotime($event->end));
+
+        return "<h2>$event->title</h2>"
+            . "<p class=\"dates\">$date, $start&mdash;$end</p>"
+            ."<p>$event->description</p>";
+    }
+
+    private function _loadEventById($id){
+        if (empty($id)){
+            return NULL;
+        }
+
+        $event = $this->_loadEventData($id);
+
+        if (isset($event[0])){
+            return new Event($event[0]);
+        }else{
+            return NULL;
+        }
     }
 }
