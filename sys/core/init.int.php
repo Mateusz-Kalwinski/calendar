@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+$status = session_status();
+if ($status == PHP_SESSION_NONE){
+    session_start();
+}
+
+if(!isset($_SESSION['token'])){
+    $_SESSION['token'] = sha1(uniqid((string)mt_rand(), TRUE));
+}
+
 include_once '../sys/config/db-cred.inc.php';
 
 foreach ($C as $name => $val){
