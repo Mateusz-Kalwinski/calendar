@@ -142,13 +142,14 @@ class Calendar extends DB_Connect{
 
         $html .= "</tr></table>";
 
-        return $html;
+        $admin = $this->_adminGeneralOptions();
+
+        return $html . $admin;
     }
 
-    public function displayEvent($id){
-        if (empty($id)){
-            return NULL;
-        }
+    public function displayEvent($id)
+    {
+        if ( empty($id) ) { return NULL; }
 
         $id = preg_replace('/[^0-9]/', '', $id);
 
@@ -156,12 +157,43 @@ class Calendar extends DB_Connect{
 
         $ts = strtotime($event->start);
         $date = date('F d, Y', $ts);
-        $start = date('d:ia', $ts);
+        $start = date('g:ia', $ts);
         $end = date('g:ia', strtotime($event->end));
 
+        $admin = $this->_adminEntryOptions($id);
+
         return "<h2>$event->title</h2>"
-            . "<p class=\"dates\">$date, $start&mdash;$end</p>"
-            ."<p>$event->description</p>";
+            . "<p class=dates>$date, $start&mdash;$end</p>"
+            . "<p>$event->description</p>$admin";
+    }
+
+    private function _adminGeneralOptions(){
+        return <<<ADMIN_OPTIONS
+        <a href="admin.php" class = "admin"> Dodaj wydarzenie</a>
+ADMIN_OPTIONS;
+    }
+
+    private function _adminEntryOptions($id)
+    {
+        return <<<ADMIN_OPTIONS
+
+    <div class="admin-options">
+    <form action="admin.php" method="post">
+        <p>
+            <input type="submit" name="edit_event"
+                  value="Edytuj wydarzenie" />
+            <input type="hidden" name="event_id"
+                  value="$id" />
+        </p>
+    </form>
+    <form action="confirmdelete.php" method="post">
+        <p>
+            <input type="submit" name="delete_event" value="Usuń wydarzenie">
+            <input type="hidden" name="event_id" value="$id">
+        </p>    
+    </form>
+    </div>
+ADMIN_OPTIONS;
     }
 
     public function displayForm()
@@ -200,7 +232,7 @@ class Calendar extends DB_Connect{
              */
             if ( !is_object($event) ) { return NULL; }
 
-            $submit = "Edytuj to wydarzenie";
+            $submit = "Edytuj wydarzenie";
         }
 
         /*
@@ -271,6 +303,49 @@ FORM_MARKUP;
         }catch (Exception $e){
             return $e->getMessage();
         }
+    }
+
+    public function confirmDelete($id){
+        if (empty($id)){
+            return NULL;
+        }
+        $id = preg_replace('/[^0-9]/', '', $id);
+
+        if (isset($_POST['confirm_delete']) && $_POST['token'] == $_SESSION['token']){
+            if ($_POST['confirm_delete'] == 'Tak, usuń to wydarzenie'){
+                $sql = "DELETE FROM `events` WHERE `event_id` = :id LIMIT 1";
+                try{
+                    $stmt = $this->db->prepare($sql);
+                    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+                    $stmt->execute();
+                    $stmt->closeCursor();
+                    header("Location: ./");
+                    return;
+                }catch (Exception $e){
+                    return $e->getMessage();
+                }
+            }else{
+                header("Location: ./");
+                return;
+            }
+        }
+        $event = $this->_loadEventById($id);
+        if (!is_object($event)){
+            header("Location: ./");
+        }
+        return <<<CONFIRM_DELETE
+        <form action="confirmdelete.php" method="post">
+            <h2>Czy napewno chcesz usunąć "$event->title"?</h2>
+            <p>Tej operacji nie można cofnąć</p>
+            <p>
+                <input type="submit" name="confirm_delete" value="Tak, usuń to wydarzenie">
+                <input type="submit" name="confirm_delete" value="Nie usuwaj">
+                <input type="hidden" name="event_id" value="$event->id">
+                <input type="hidden" name="token" value="$_SESSION[token]">
+            </p>
+        </form>
+CONFIRM_DELETE;
+
     }
 
     private function _loadEventById($id){
