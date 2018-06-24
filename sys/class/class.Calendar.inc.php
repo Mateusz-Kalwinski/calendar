@@ -170,6 +170,13 @@ class Calendar extends DB_Connect{
     private function _adminGeneralOptions(){
         return <<<ADMIN_OPTIONS
         <a href="admin.php" class = "admin"> Dodaj wydarzenie</a>
+        <form action="assets/inc/process.inc.php" method="post">
+            <div>
+                <input type="submit" value="Wyloguj" class="logout">
+                <input type="hidden" name="token" value="$_SESSION[token]">
+                <input type="hidden" name="action" value="user_logout">            
+            </div>
+        </form>
 ADMIN_OPTIONS;
     }
 
@@ -268,7 +275,7 @@ FORM_MARKUP;
 
     public function processForm(){
         if ($_POST['action'] != 'event_edit'){
-            return 'Coś poszło nie tak!';
+            return 'Ups, coś poszło nie tak!';
         }
 
         $title = htmlentities($_POST['event_title'], ENT_QUOTES);
