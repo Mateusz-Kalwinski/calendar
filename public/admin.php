@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 include_once '../sys/core/init.int.php';
 
+if (!isset($_SESSION['user'])){
+    header('Location: login.php');
+    exit();
+}
+
 $page_title = 'Dodaj/Edytuj wydarzenie';
 $css_files =  array('style.css');
 $css_files[] = 'materialize.css';
