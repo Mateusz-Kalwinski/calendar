@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Czas generowania: 14 Cze 2018, 19:22
+-- Czas generowania: 25 Cze 2018, 20:00
 -- Wersja serwera: 5.7.22-0ubuntu0.16.04.1
 -- Wersja PHP: 7.0.30-0ubuntu0.16.04.1
 
@@ -39,8 +39,27 @@ CREATE TABLE `events` (
 --
 
 INSERT INTO `events` (`event_id`, `event_title`, `event_desc`, `event_start`, `event_end`) VALUES
-(1, 'Nowy Rok', 'Szczęśliwego nowego roku!', '2015-12-31 23:00:00', '2016-01-01 22:59:59'),
-(2, 'Ostatni dzień stycznia', 'Ostatni dzień miesiąca!', '2016-01-30 23:00:00', '2016-01-31 22:59:59');
+(6, 'poprawiony kod', 'poprawiono liter&oacute;wkę w pliku process.inc.php', '2018-06-22 11:00:00', '2018-06-22 20:00:00');
+
+-- --------------------------------------------------------
+
+--
+-- Struktura tabeli dla tabeli `users`
+--
+
+CREATE TABLE `users` (
+  `user_id` int(11) NOT NULL,
+  `user_name` varchar(80) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `user_pass` varchar(47) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `user_email` varchar(80) COLLATE utf8_unicode_ci DEFAULT NULL
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Zrzut danych tabeli `users`
+--
+
+INSERT INTO `users` (`user_id`, `user_name`, `user_pass`, `user_email`) VALUES
+(1, 'testuser', '9a0d39aaa1b6dffbea68a0558c2239be60352c83dc9dcd6', 'admin@example.com');
 
 --
 -- Indeksy dla zrzutów tabel
@@ -54,6 +73,13 @@ ALTER TABLE `events`
   ADD KEY `event_start` (`event_start`);
 
 --
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`user_id`),
+  ADD UNIQUE KEY `user_name` (`user_name`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -61,7 +87,12 @@ ALTER TABLE `events`
 -- AUTO_INCREMENT dla tabeli `events`
 --
 ALTER TABLE `events`
-  MODIFY `event_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `event_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+--
+-- AUTO_INCREMENT dla tabeli `users`
+--
+ALTER TABLE `users`
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
