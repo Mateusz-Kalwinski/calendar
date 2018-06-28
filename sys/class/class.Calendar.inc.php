@@ -3,6 +3,7 @@ declare(strict_types=1);
 ini_set('display_errors', '1');
 
 include_once 'class.DB_Connect.inc.php';
+include_once 'class.Mail.inc.php';
 
 class Calendar extends DB_Connect{
     private $_useDate;
@@ -38,7 +39,7 @@ class Calendar extends DB_Connect{
     private function _loadEventData($id = NULL){
 
         $sql = "SELECT
-                `event_id`, `event_title`, `event_desc`, `event_start`, `event_end`
+                `event_id`, `event_title`, `event_desc`, `event_start`, `event_end`, `event_from`, `event_to`
                 FROM `events`";
 
         if (!empty($id)){
@@ -85,10 +86,27 @@ class Calendar extends DB_Connect{
     public function buildCalendar()
     {
 
-        $cal_month = date('F Y', strtotime($this->_useDate));
-        define('WEEKDAYS', array('Nd', 'Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So'));
+        $cal_year = date('Y', strtotime($this->_useDate));
+        $cal_month =date('m', strtotime($this->_useDate));
 
-        $html = "\n\t<h2>$cal_month</h2><table>";
+        define('WEEKDAYS', array('Nd', 'Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So'));
+        $polish_month =array(
+            '01'=>'Styczeń ',
+            '02'=>'Luty ',
+            '03' =>'Marzec ',
+            '04' => 'Kwiecień ',
+            '05' => 'Maj ',
+            '06' => 'Czerwiec ',
+            '07' => 'Lipiec ',
+            '08' => 'Sierpnień ',
+            '09' => 'Wrzesień ',
+            '10' => 'Październik ',
+            '11' => 'Listopad ',
+            '12' => 'Grudzień '
+        );
+
+        $html = "<h2>$polish_month[$cal_month] $cal_year</h2><table>";
+
         for ( $d=0, $labels=NULL; $d<7; ++$d )
         {
             $labels .= "<td class='weekdays'>" . WEEKDAYS[$d] . "</td>";
@@ -164,6 +182,7 @@ class Calendar extends DB_Connect{
 
         return "<h2>$event->title</h2>"
             . "<p class=dates>$date, $start&mdash;$end</p>"
+            . "<p>$event->from</p>"
             . "<p>$event->description</p>$admin";
     }
 
@@ -205,46 +224,28 @@ ADMIN_OPTIONS;
 
     public function displayForm()
     {
-        /*
-         * Sprawdź, czy został przekazany identyfikator
-         */
         if ( isset($_POST['event_id']) )
         {
-            $id = (int)$_POST['event_id']; // Rzutuj na typ całkowity, aby zapewnić poprawność danych
+            $id = (int)$_POST['event_id'];
         }
         else
         {
             $id = NULL;
         }
 
-        /*
-         * Inicjalizuj nagłówek i tekst przycisku
-         */
         $submit = "Utwórz nowe wydarzenie";
 
-        /*
-         * W przypadku braku identyfikatora, utwórz pusty obiekt wydarzenia.
-         */
         $event = new Event();
 
-        /*
-         * W przeciwnym razie załaduj odpowiednie wydarzenie
-         */
         if ( !empty($id))
         {
             $event = $this->_loadEventById($id);
 
-            /*
-             * Jeżeli nie ma obiektu, zwróć NULL
-             */
             if ( !is_object($event) ) { return NULL; }
 
             $submit = "Edytuj wydarzenie";
         }
 
-        /*
-         * Generuj kod
-         */
         return <<<FORM_MARKUP
 
     <form action="assets/inc/process.inc.php" method="post">
@@ -259,6 +260,12 @@ ADMIN_OPTIONS;
             <input type="text" name="event_end"
                   id="event_end" value="$event->end" />
             <label for="event_end">Czas zakończenia</label>
+            <input type="text" name="event_from"
+                  id="event_from" value="$event->from" />
+            <label for="event_end">Adres początkowy</label>
+            <input type="text" name="event_to"
+                  id="event_to" value="$event->to" />
+            <label for="event_end">Adres końcowy</label>
             <textarea name="event_description"
                   id="event_description">$event->description</textarea>
             <label for="event_description">Opis wydarzenia</label>
@@ -282,11 +289,13 @@ FORM_MARKUP;
         $desc = htmlentities($_POST['event_description'], ENT_QUOTES);
         $start = htmlentities($_POST['event_start'], ENT_QUOTES);
         $end = htmlentities($_POST['event_end'], ENT_QUOTES);
+        $from = htmlentities($_POST['event_from'], ENT_QUOTES);
+        $to = htmlentities($_POST['event_to'], ENT_QUOTES);
 
         if (empty($_POST['event_id'])){
             $sql = "INSERT INTO `events`
-                    (`event_title`, `event_desc`, `event_start`, `event_end`)
-                    VALUES (:title, :description, :start, :end)";
+                    (`event_title`, `event_desc`, `event_start`, `event_end`, `event_from`, `event_to`)
+                    VALUES (:title, :description, :start, :end, :from, :to)";
         }else{
             $id = (int) $_POST['event_id'];
             $sql = "UPDATE `events`
@@ -294,7 +303,9 @@ FORM_MARKUP;
                      `event_title`=:title,
                       `event_desc`=:description,
                       `event_start`=:start,
-                      `event_end`=:end
+                      `event_end`=:end,
+                      `event_from`=:from,
+                      `event_to`=:to
                   WHERE `event_id` = $id";
         }
 
@@ -304,8 +315,22 @@ FORM_MARKUP;
             $stmt->bindParam(":description", $desc, PDO::PARAM_STR);
             $stmt->bindParam(":start", $start, PDO::PARAM_STR);
             $stmt->bindParam(":end", $end, PDO::PARAM_STR);
+            $stmt->bindParam(":from", $from, PDO::PARAM_STR);
+            $stmt->bindParam(":to", $to, PDO::PARAM_STR);
             $stmt->execute();
             $stmt->closeCursor();
+            if (empty($_POST['event_id'])){
+                $recipment = 'mateucz27@gmail.com';
+                $subject = 'Dodano wydarzenie: ' . $title;
+                $body = '<p>przykładowy tekst podczas dodawania wydarzenia</p>';
+            }else{
+                $recipment = 'mateucz27@gmail.com';
+                $subject = 'Edytowano wydarzenie: ' . $title;
+                $body = '<h1>przykłodowy tekst podczas edycji wydarzenia</h1>';
+            }
+            $mail = new Mail();
+            $mail->valueMail($recipment, $subject, $body);
+
             return TRUE;
         }catch (Exception $e){
             return $e->getMessage();
@@ -317,7 +342,10 @@ FORM_MARKUP;
             return NULL;
         }
         $id = preg_replace('/[^0-9]/', '', $id);
-
+        $event = $this->_loadEventById($id);
+        if (!is_object($event)){
+            header("Location: ./");
+        }
         if (isset($_POST['confirm_delete']) && $_POST['token'] == $_SESSION['token']){
             if ($_POST['confirm_delete'] == 'Tak, usuń to wydarzenie'){
                 $sql = "DELETE FROM `events` WHERE `event_id` = :id LIMIT 1";
@@ -326,6 +354,14 @@ FORM_MARKUP;
                     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
                     $stmt->execute();
                     $stmt->closeCursor();
+
+                    $recipment = 'mateucz27@gmail.com';
+                    $subject = 'Usunięto wydarzenie: ' . $event->title;
+                    $body = '<h1>przykłodowy tekst podczas usuwania wydarzenia</h1>';
+
+                    $mail = new Mail();
+                    $mail->valueMail($recipment, $subject, $body);
+
                     header("Location: ./");
                     return;
                 }catch (Exception $e){
@@ -336,10 +372,7 @@ FORM_MARKUP;
                 return;
             }
         }
-        $event = $this->_loadEventById($id);
-        if (!is_object($event)){
-            header("Location: ./");
-        }
+
         return <<<CONFIRM_DELETE
         <form action="confirmdelete.php" method="post">
             <h2>Czy napewno chcesz usunąć "$event->title"?</h2>
@@ -352,7 +385,6 @@ FORM_MARKUP;
             </p>
         </form>
 CONFIRM_DELETE;
-
     }
 
     private function _loadEventById($id){
