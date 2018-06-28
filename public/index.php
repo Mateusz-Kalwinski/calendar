@@ -11,14 +11,15 @@ $css_files = array('style.css');
 $css_files[] = 'materialize.css';
 
 include_once 'assets/common/header.inc.php';
-if (!isset($_SESSION['user'])) {
+if (isset($_SESSION['user'])) {
     echo '<div class="container">';
     echo $cal->buildCalendar();
+    phpversion();
     echo isset($_SESSION['user']) ? "Zalogowany!" : "Wylogowany!";
+    echo '</div>';
 }
 else{
     header('Location: login.php');
 }
 include_once 'assets/common/footer.inc.php';
-echo '</div>'
 ?>
