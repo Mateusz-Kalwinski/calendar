@@ -10,6 +10,8 @@ class Event
     public $description;
     public $start;
     public $end;
+    public $from;
+    public $to;
 
     public function __construct($event=NULL)
     {
@@ -20,6 +22,9 @@ class Event
             $this->description = $event['event_desc'];
             $this->start = $event['event_start'];
             $this->end = $event['event_end'];
+            $this->from = $event['event_from'];
+            $this->to = $event['event_to'];
+
         }
         else
         {
@@ -28,6 +33,8 @@ class Event
             $this->description = "";
             $this->start = "";
             $this->end = "";
+            $this->from = "";
+            $this->to = "";
         }
     }
 
