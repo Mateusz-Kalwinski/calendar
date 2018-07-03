@@ -189,6 +189,9 @@ class Calendar extends DB_Connect{
     private function _adminGeneralOptions(){
         return <<<ADMIN_OPTIONS
         <a href="admin.php" class = "admin"> Dodaj wydarzenie</a>
+        <br>
+        <a href="addUser.php" class = "admin"> Dodaj użytkownika</a>
+
         <form action="assets/inc/process.inc.php" method="post">
             <div>
                 <input type="submit" value="Wyloguj" class="logout">
@@ -251,7 +254,7 @@ ADMIN_OPTIONS;
     <form action="assets/inc/process.inc.php" method="post">
         <fieldset>
             <legend>$submit</legend>
-            <input type="text" name="event_title"
+            <input type="text" name="event_title"minlength="1" maxlength="50"
                   id="event_title" value="$event->title" />
             <label for="event_title">Nazwa wydarzenia</label>
             <input type="text" name="event_start"
@@ -279,7 +282,7 @@ ADMIN_OPTIONS;
     </form>
 FORM_MARKUP;
     }
-
+//kod
     public function processForm(){
         if ($_POST['action'] != 'event_edit'){
             return 'Ups, coś poszło nie tak!';
@@ -387,6 +390,74 @@ FORM_MARKUP;
 CONFIRM_DELETE;
     }
 
+    //tutaj
+
+    public function displayFormAddUser(){
+        $submit = 'Dodaj użytkownika';
+        return <<<FORM_ADDUSER
+        <form action="assets/inc/process.inc.php" method="post">
+            <legend>$submit</legend>
+            <p>
+                <label for="user_name">Nazwa użytkownika</label>
+                <input type="text" name="user_name" id="user_name">
+                <label for="user_email">E-mail użytkownika</label>
+                <input type="text" name="user_email" id="user_email">
+                <label for="user_pass">Hasło</label>
+                <input type="password" name="user_pass" id="user_pass">
+                <label for="user_pass_confirm">Potwierdź hasło</label>
+                <input type="password" name="user_pass_confirm" id="user_pass_confirm">
+                <br>
+                <input type="hidden" name="token" value="$_SESSION[token]" />
+                <input type="hidden" name="action" value="add_user" />
+                <input type="submit" name="event_submit" value="$submit" />
+                lub <a href="./">anuluj</a>
+            </p>
+        </form>
+FORM_ADDUSER;
+    }
+
+    public function processFormAddUser()
+    {
+        if ($_POST['action'] != 'add_user') {
+            return 'Ups, coś poszło nie tak!';
+        }
+
+        $userName = htmlentities($_POST['user_name'], ENT_QUOTES);
+        $userEmail = htmlentities($_POST['user_email'], ENT_QUOTES);
+        $userPass = htmlentities($_POST['user_pass'], ENT_QUOTES);
+        $userPassConfirm = htmlentities($_POST['user_pass_confirm'], ENT_QUOTES);
+
+        if ($userPass == $userPassConfirm) {
+
+            $adminPass = new Admin();
+        $userPass = $adminPass->SaltedHash($userPass);
+
+
+            $sql = "INSERT INTO `users`
+                    (`user_name`, `user_pass`, `user_email`)
+                    VALUES (:userName, :userPass, :userEmail)";
+            try {
+                $stmt = $this->db->prepare($sql);
+                $stmt->bindParam(":userName", $userName, PDO::PARAM_STR);
+                $stmt->bindParam(":userPass", $userPass, PDO::PARAM_STR);
+                $stmt->bindParam(":userEmail", $userEmail, PDO::PARAM_STR);
+                $stmt->execute();
+                $stmt->closeCursor();
+
+                return TRUE;
+
+
+            } catch (Exception $e) {
+                return $e->getMessage();
+            }
+        }else{
+            return 'Niezgodne hasło!';
+        }
+
+    }
+
+
+
     private function _loadEventById($id){
         if (empty($id)){
             return NULL;
@@ -400,4 +471,6 @@ CONFIRM_DELETE;
             return NULL;
         }
     }
+
+
 }
