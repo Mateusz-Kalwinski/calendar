@@ -12,21 +12,27 @@ include_once 'assets/common/header.inc.php';
 ?>
 
 <div class="container">
-    <form action="assets/inc/process.inc.php" method="post">
-        <fieldset>
-            <legend>Zaloguj się</legend>
-            <label for="uname">Nazwa użytkownika</label>
-            <input type="text" name="uname" id="uname" value="">
-            <label for="pword">Hasło</label>
-            <input type="password" name="pword" id="pword" value="">
+    <form class="forms" action="assets/inc/process.inc.php" method="post" autocomplete="off">
+            <div class="input-field">
+                <i class="material-icons prefix">account_circle</i>
+                <input id="uname" type="text" class="validate" name="uname" value="" autocomplete="off">
+                <label for="uname">Nazwa użytkownika</label>
+            </div>
+            <div class="input-field">
+                <i class="material-icons prefix">mode_edit</i>
+                <input id="pword" type="password" class="validate" name="pword" value="" autocomplete="off">
+                <label for="pword">Hasło</label>
+            </div>
             <input type="hidden" name="token" value="<?=$_SESSION['token']?>">
             <input type="hidden" name="action" value="user_login">
-            <input type="submit" name="login_submit" value="Zaloguj się">
-            <a href="./">Anuluj</a>
-        </fieldset>
+            <div class="center-login">
+                <div class="col s8">
+                    <button class="waves-effect waves-light btn padding-1" type="submit" name="login_submit"><i class="material-icons left">send</i>Zaloguj się</button>
+                    <button class="waves-effect waves-light btn red accent-2 padding-1"><i class="material-icons left">cancel</i><a class="white-text" href="./">Anuluj</a></button>
+                </div>
+            </div>
+        </div>
     </form>
-</div>
-
 <?php
 include_once 'assets/common/footer.inc.php';
 ?>
