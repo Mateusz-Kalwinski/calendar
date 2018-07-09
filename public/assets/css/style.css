@@ -1,17 +1,35 @@
 body{
-    color: #ffd251 !important;
+    color: #ffd251;
+    background-image: url("../common/img/bg.jpg");
+    min-width: 100%;
+    min-height: 100vh;
+    background-repeat: no-repeat;
+    background-position: center center;
 }
 
+nav {
+    height: 100px !important;
+    line-height: 100px !important;
+}
+
+nav form{
+    margin-right: 50px;
+}
 strong {
-    padding: 20px;
     font-weight: 300 !important;
 }
 
-h2 {
-    text-align: center;
+.content{
+    background-color: #ffffff;
+    margin-bottom: 50px;
+    margin-top: 50px;
 }
+
+h2 {
+    padding-top: 25px;
+}
+
 table{
-    width: 80% !important;
     margin: auto !important;
 }
 
@@ -25,6 +43,7 @@ td{
     transition: all 0.3s ease;
     color:#039be5;
     font-weight: 300 !important;
+    font-size: 14px !important;
 }
 
 .event:hover{
@@ -52,3 +71,78 @@ td{
     -webkit-box-shadow: 0 8px 17px 2px rgba(0,0,0,0.14), 0 3px 14px 2px rgba(0,0,0,0.12), 0 5px 5px -3px rgba(0,0,0,0.2);
     box-shadow: 0 8px 17px 2px rgba(0,0,0,0.14), 0 3px 14px 2px rgba(0,0,0,0.12), 0 5px 5px -3px rgba(0,0,0,0.2);
 }
+
+.logo-img{
+    width: 43% !important;
+    margin-left: 50px;
+}
+
+.align-logout{
+    margin-left: 30px;
+}
+
+.align-logout-nav{
+    margin-top: 33px;
+}
+
+.padding-1 {
+    margin: 20px !important;
+}
+
+input:-webkit-autofill {
+    border: 1px solid transparent !important;
+    -webkit-box-shadow: inset 0 0 0px 9999px transparent !important;
+}
+
+input:focus,
+input:-webkit-autofill:focus {
+    border-color: transparent !important;
+    -webkit-box-shadow: inset 0 0 0px 9999px transparent,
+    0 0 8px rgba(255, 255, 255, 1) !important;
+}
+
+.form-login{
+    background-color: rgba(255,255,255, 1);
+    width: 50%;
+    padding: 30px !important;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.app-form{
+    background-color: rgba(255,255,255, 1);
+    width: 100%;
+    padding: 30px !important;
+}
+
+.center-login {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.eventV{
+    padding: 30px;
+}
+
+/*.headerV{*/
+    /*font-size: 19px;*/
+/*}*/
+
+.light-font{
+    font-weight:300;
+}
+
+.info-margin{
+    margin-right: 50px;
+}
+
+@media (max-width: 466px) {
+    .forms{
+        width: 90%;
+    }
+}
+
+
