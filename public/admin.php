@@ -20,7 +20,9 @@ $cal = new Calendar($dbo);
 ?>
 
 <div class="container">
+    <div class="content">
     <?=$cal->displayForm()?>
+    </div>
 </div>
 <?php
 include_once 'assets/common/footer.inc.php'
