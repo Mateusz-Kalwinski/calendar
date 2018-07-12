@@ -38,17 +38,13 @@ td{
     width: 150px !important;
     text-align: center !important;
     border-radius: 0px !important;
+    position: relative;
 }
 .event {
-    transition: all 0.3s ease;
-    color:#039be5;
     font-weight: 300 !important;
     font-size: 14px !important;
 }
 
-.event:hover{
-    color: #02577f;
-}
 .fill {
     background-color: rgba(0, 0, 0, 0);
 }
@@ -58,7 +54,7 @@ td{
     font-size: 45px !important;
 }
 
-.weekdays {
+.green-color {
     color: #0f9d58 !important;
 }
 
@@ -137,6 +133,20 @@ input:-webkit-autofill:focus {
 
 .info-margin{
     margin-right: 50px;
+}
+
+.userPadding{
+    padding: 30px;
+}
+
+.NFZdot{
+    width: 15px;
+    height: 15px;
+    background-color: #ee6e73 ;
+    border-radius: 50%;
+    position: absolute;
+    top: 10px;
+    right: 10px;
 }
 
 @media (max-width: 466px) {
