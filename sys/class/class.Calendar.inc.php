@@ -15,8 +15,7 @@ class Calendar extends DB_Connect{
     public function __construct($dbo = NULL, $useDate = NULL)
     {
         parent::__construct($dbo);
-
-        if (isset($_useDate)){
+        if (isset($useDate)){
             $this->_useDate = $useDate;
         }else{
             $this->_useDate =date('Y-m-d H:i:s');
@@ -39,7 +38,7 @@ class Calendar extends DB_Connect{
     private function _loadEventData($id = NULL){
 
         $sql = "SELECT
-                `event_id`, `event_title`, `event_desc`, `event_start`, `event_end`, `event_from`, `event_to`
+                `event_id`, `event_title`, `event_desc`, `event_start`, `event_end`, `event_from`, `event_to`, `NFZ`
                 FROM `events`";
 
         if (!empty($id)){
@@ -105,11 +104,11 @@ class Calendar extends DB_Connect{
             '12' => 'Grudzień '
         );
 
-        $html = "<h2>$polish_month[$cal_month] $cal_year</h2><table>";
+        $html = "<div class='content z-depth-5'><h2 class='center-align'>$polish_month[$cal_month] $cal_year</h2><table class='responsive-table'>";
 
         for ( $d=0, $labels=NULL; $d<7; ++$d )
         {
-            $labels .= "<td class='weekdays'>" . WEEKDAYS[$d] . "</td>";
+            $labels .= "<td class='green-color size'>" . WEEKDAYS[$d] . "</td>";
         }
         $html .=
              $labels . "</tr>";
@@ -126,7 +125,7 @@ class Calendar extends DB_Connect{
                 $class = " today";
             }
 
-            $ls = sprintf("<td class=\"days%s\">", $class);
+            $ls = sprintf("<td class=\"size days%s\">", $class);
             $le = "</td>";
             $event_info = NULL;
 
@@ -136,14 +135,19 @@ class Calendar extends DB_Connect{
                 {
                     foreach ( $events[$c] as $event )
                     {
-                        $link = '<a class="event" href="view.php?event_id='
+                        if ($event->NFZ == '1'){
+                            $isNFZ = '<div class="NFZdot"></div>';
+                        }else{
+                            $isNFZ ='';
+                        }
+                        $link = '<a class="event indigo-text text-lighten-2" href="view.php?event_id='
                             . $event->id . '">' . $event->title
                             . '</a>';
-                        $event_info .= "$link";
+                        $event_info .="$isNFZ" . "$link";
                     }
                 }
 
-                $date = sprintf("\n\t\t\t<strong>%02d</strong>",$c++);
+                $date = sprintf("\n\t\t\t<strong>%02d</strong><br>",$c++);
             }
             else { $date="&nbsp;"; }
 
@@ -158,11 +162,10 @@ class Calendar extends DB_Connect{
             ++$i;
         }
 
-        $html .= "</tr></table>";
+        $html .= "</tr></table></div>";
 
-        $admin = $this->_adminGeneralOptions();
 
-        return $html . $admin;
+        return $html;
     }
 
     public function displayEvent($id)
@@ -174,52 +177,96 @@ class Calendar extends DB_Connect{
         $event = $this->_loadEventById($id);
 
         $ts = strtotime($event->start);
-        $date = date('F d, Y', $ts);
-        $start = date('g:ia', $ts);
-        $end = date('g:ia', strtotime($event->end));
+        $te = strtotime($event->end);
+        $date_start = date('d-m-Y', $ts);
+        $start = date('G:i:s', $ts);
+        $date_end = date('d-m-Y', $te);
+        $end = date('G:i:s', $te);
 
         $admin = $this->_adminEntryOptions($id);
-
-        return "<h2>$event->title</h2>"
-            . "<p class=dates>$date, $start&mdash;$end</p>"
-            . "<p>$event->from</p>"
-            . "<p>$event->description</p>$admin";
-    }
-
-    private function _adminGeneralOptions(){
-        return <<<ADMIN_OPTIONS
-        <a href="admin.php" class = "admin"> Dodaj wydarzenie</a>
-        <br>
-        <a href="addUser.php" class = "admin"> Dodaj użytkownika</a>
-
-        <form action="assets/inc/process.inc.php" method="post">
-            <div>
-                <input type="submit" value="Wyloguj" class="logout">
-                <input type="hidden" name="token" value="$_SESSION[token]">
-                <input type="hidden" name="action" value="user_logout">            
+        if ($event->NFZ == 1 ){
+            $isNFZ = 'Tak';
+        }else{
+            $isNFZ = 'Nie';
+        }
+        return <<<EVENT_VIEW
+            <div class="eventV">
+                <h3 class="center-align">Szczegóły wezwania</h3>
+                    <div class="row">
+                        <div class="col s4 m5 l2">
+                            <p class="teal-text text-lighten-2 ">Nazwa wezwania:</p>
+                        </div>
+                        <div class="col s8 m7 l10">
+                            <p class="indigo-text text-lighten-2">$event->title</p>
+                        </div>
+                        
+                        <div class="col s4 m5 l2">
+                            <p class="teal-text text-lighten-2 ">Data rozpoczęcia: </p>
+                        </div>
+                        <div class="col s8 m7 l10">
+                            <p class="indigo-text text-lighten-2">$date_start $start</p>
+                        </div>
+                        
+                        <div class="col s4 m5 l2">
+                            <p class="teal-text text-lighten-2 ">Data zakończenia: </p>
+                        </div>
+                        <div class="col s8 m7 l10">
+                            <p class="indigo-text text-lighten-2">$date_end $end</p>
+                        </div>
+                        
+                        <div class="col s4 m5 l2">
+                            <p class="teal-text text-lighten-2 ">Adres początkowy: </p>
+                        </div>
+                        <div class="col s8 m7 l10">
+                            <p class="indigo-text text-lighten-2">$event->from</p>
+                        </div>
+                        
+                        <div class="col s4 m5 l2">
+                            <p class="teal-text text-lighten-2 ">Adres zakończenia: </p>
+                        </div>
+                        <div class="col s8 m7 l10">
+                            <p class="indigo-text text-lighten-2">$event->to</p>
+                        </div>
+                        
+                        <div class="col s4 m5 l2">
+                            <p class="teal-text text-lighten-2 ">Opis: </p>
+                        </div>
+                        <div class="col s8 m7 l10">
+                            <p class="indigo-text text-lighten-2">$event->description</p>
+                        </div>
+                        <div class="col s4 m5 l2">
+                            <p class="teal-text text-lighten-2 ">Wezwanie NFZ:</p>
+                        </div>
+                        <div class="col s8 m7 l10">
+                            <p class="indigo-text text-lighten-2">$isNFZ</p>
+                        </div>
+                    </div>
+                </div>
+                $admin
             </div>
-        </form>
-ADMIN_OPTIONS;
+EVENT_VIEW;
+
     }
+
+
 
     private function _adminEntryOptions($id)
     {
         return <<<ADMIN_OPTIONS
 
-    <div class="admin-options">
+    <div class="admin-options center-login">
     <form action="admin.php" method="post">
-        <p>
-            <input type="submit" name="edit_event"
-                  value="Edytuj wydarzenie" />
+        <div class="input-field">
+            <button class="waves-effect waves-light btn padding-1" type="submit" name="edit_event"><i class="material-icons left">mode_edit</i>Edytuj wezwanie</button>
             <input type="hidden" name="event_id"
                   value="$id" />
-        </p>
+        </div>
     </form>
     <form action="confirmdelete.php" method="post">
-        <p>
-            <input type="submit" name="delete_event" value="Usuń wydarzenie">
+        <div class="input-field">
+            <button class="waves-effect waves-light blue-grey darken-2 btn padding-1" type="submit" name="delete_event"><i class="material-icons left">delete</i>Usuń wezwanie</button>
             <input type="hidden" name="event_id" value="$id">
-        </p>    
+        </div>
     </form>
     </div>
 ADMIN_OPTIONS;
@@ -243,42 +290,76 @@ ADMIN_OPTIONS;
         if ( !empty($id))
         {
             $event = $this->_loadEventById($id);
+            $explode_event_start = explode(' ', $event->start);
+            $explode_event_end = explode(' ', $event->end);
 
             if ( !is_object($event) ) { return NULL; }
 
             $submit = "Edytuj wydarzenie";
         }
-
         return <<<FORM_MARKUP
-
-    <form action="assets/inc/process.inc.php" method="post">
-        <fieldset>
-            <legend>$submit</legend>
-            <input type="text" name="event_title"minlength="1" maxlength="50"
-                  id="event_title" value="$event->title" />
-            <label for="event_title">Nazwa wydarzenia</label>
-            <input type="text" name="event_start"
-                  id="event_start" value="$event->start" />
-            <label for="event_start">Czas rozpoczęcia</label>
-            <input type="text" name="event_end"
-                  id="event_end" value="$event->end" />
-            <label for="event_end">Czas zakończenia</label>
-            <input type="text" name="event_from"
-                  id="event_from" value="$event->from" />
-            <label for="event_end">Adres początkowy</label>
-            <input type="text" name="event_to"
-                  id="event_to" value="$event->to" />
-            <label for="event_end">Adres końcowy</label>
-            <textarea name="event_description"
-                  id="event_description">$event->description</textarea>
-            <label for="event_description">Opis wydarzenia</label>
-            <br>
+    <form class="app-form" action="assets/inc/process.inc.php" method="post" autocomplete="off">
+            <h3 class="center-align">$submit</h3>
+            
+            <div class="input-field">
+                <i class="material-icons prefix indigo-text text-lighten-2">assignment</i>
+                <input class="validate" type="text" name="event_title"minlength="1" maxlength="40" data-length="40" id="event_title" value="$event->title" autocomplete="off" />
+                <label for="event_title">Nazwa wydarzenia</label>
+            </div>
+            <div class="input-field">
+                <i class="material-icons prefix indigo-text text-lighten-2">date_range</i>
+                <input class="datepicker" type="text" name="event_date_start" id="event_date_start" value="$explode_event_start[0]"/>
+                <label for="event_date_start">Data rozpoczęcia</label>
+            </div>
+            <div class="input-field">
+                <i class="material-icons prefix indigo-text text-lighten-2">access_time</i>
+                <input class="timepicker" type="text" name="event_time_start" id="event_time_start" value="$explode_event_start[1]"/>
+                <label for="event_time_start">Czas rozpoczęcia</label>
+            </div>
+            <div class="input-field">
+                <i class="material-icons prefix indigo-text text-lighten-2">date_range</i>
+                <input class="datepicker_end" type="text" name="event_date_end" id="event_date_end" value="$explode_event_end[0]"/>
+                <label for="event_date_end">Data zakończenia</label>
+            </div>
+            <div class="input-field">
+                <i class="material-icons prefix indigo-text text-lighten-2">access_time</i>
+                <input class="timepicker" type="text" name="event_time_end" id="event_time_end" value="$explode_event_end[0]"/>
+                <label for="event_time_end">Czas zakończenia</label>
+            </div>
+            
+            <div class="input-field">
+                <i class="material-icons prefix indigo-text text-lighten-2">person_pin_circle</i>
+                <input class="validate" type="text" name="event_from"
+                      id="event_from" value="$event->from" autocomplete="off"/>
+                <label for="event_from">Adres początkowy</label>
+            </div>
+            <div class="input-field">
+                <i class="material-icons prefix indigo-text text-lighten-2">near_me</i>
+                <input class="validate" type="text" name="event_to"
+                  id="event_to" value="$event->to" autocomplete="off"/>
+                <label for="event_to">Adres końcowy</label>
+            </div>
+            <div class="input-field">
+                <i class="material-icons prefix indigo-text text-lighten-2">create</i>
+                <textarea class="materialize-textarea" name="event_description"
+                      id="event_description">$event->description</textarea>
+                <label for="event_description">Opis wydarzenia</label>
+            </div>
+            <p>
+                <label>
+                    <input type="checkbox" name="NFZ" value="1"/>
+                    <span>Wezwanie NFZ</span>
+              </label>
+            </p>
             <input type="hidden" name="event_id" value="$event->id" />
             <input type="hidden" name="token" value="$_SESSION[token]" />
             <input type="hidden" name="action" value="event_edit" />
-            <input type="submit" name="event_submit" value="$submit" />
-            lub <a href="./">anuluj</a>
-        </fieldset>
+            <div class="center-login">
+                <div class="col s7">
+                    <button class="waves-effect waves-light btn padding-1" name="event_submit" value="$submit"><i class="material-icons left">send</i>$submit</button>
+                    <button class="waves-effect waves-light btn red accent-2 padding-1"><i class="material-icons left">cancel</i><a class="white-text" href="./">Anuluj</a></button>
+                </div>
+            </div>
     </form>
 FORM_MARKUP;
     }
@@ -290,15 +371,30 @@ FORM_MARKUP;
 
         $title = htmlentities($_POST['event_title'], ENT_QUOTES);
         $desc = htmlentities($_POST['event_description'], ENT_QUOTES);
-        $start = htmlentities($_POST['event_start'], ENT_QUOTES);
-        $end = htmlentities($_POST['event_end'], ENT_QUOTES);
+        $start_date = htmlentities($_POST['event_date_start'], ENT_QUOTES);
+        $start_time = htmlentities($_POST['event_time_start'], ENT_QUOTES);
+        $end_date = htmlentities($_POST['event_date_end'], ENT_QUOTES);
+        $end_time = htmlentities($_POST['event_time_end'], ENT_QUOTES);
         $from = htmlentities($_POST['event_from'], ENT_QUOTES);
         $to = htmlentities($_POST['event_to'], ENT_QUOTES);
 
+        if (isset($_POST['NFZ']) && $_POST['NFZ'] == '1'){
+            $isNFZ_1 = '1';
+            $NFZ = htmlentities($isNFZ_1, ENT_QUOTES);
+        }else{
+            $isNFZ_0 = '0';
+            $NFZ = htmlentities($isNFZ_0, ENT_QUOTES);
+        }
+        $start_event = $start_date. ' ' . $start_time.':00';
+        $end_event = $end_date. ' ' . $end_time.':00';
+        var_dump($start_event);
+
+        $start =htmlentities($start_event, ENT_QUOTES);
+        $end = htmlentities($end_event, ENT_QUOTES);
         if (empty($_POST['event_id'])){
             $sql = "INSERT INTO `events`
-                    (`event_title`, `event_desc`, `event_start`, `event_end`, `event_from`, `event_to`)
-                    VALUES (:title, :description, :start, :end, :from, :to)";
+                    (`event_title`, `event_desc`, `event_start`, `event_end`, `event_from`, `event_to`, `NFZ`)
+                    VALUES (:title, :description, :start, :end, :from, :to, :NFZ)";
         }else{
             $id = (int) $_POST['event_id'];
             $sql = "UPDATE `events`
@@ -308,7 +404,8 @@ FORM_MARKUP;
                       `event_start`=:start,
                       `event_end`=:end,
                       `event_from`=:from,
-                      `event_to`=:to
+                      `event_to`=:to,
+                      `NFZ`=:NFZ
                   WHERE `event_id` = $id";
         }
 
@@ -320,6 +417,7 @@ FORM_MARKUP;
             $stmt->bindParam(":end", $end, PDO::PARAM_STR);
             $stmt->bindParam(":from", $from, PDO::PARAM_STR);
             $stmt->bindParam(":to", $to, PDO::PARAM_STR);
+            $stmt->bindParam(":NFZ", $NFZ, PDO::PARAM_STR);
             $stmt->execute();
             $stmt->closeCursor();
             if (empty($_POST['event_id'])){
@@ -360,7 +458,10 @@ FORM_MARKUP;
 
                     $recipment = 'mateucz27@gmail.com';
                     $subject = 'Usunięto wydarzenie: ' . $event->title;
-                    $body = '<h1>przykłodowy tekst podczas usuwania wydarzenia</h1>';
+                    $body = '<h1>Wydarzenie zostało usunięte! </h1>
+                             <p>Możesz dodać wydarzenie wchodząc w ten link</p>
+                             <br>
+                             <a href="http://127.0.0.1/kalendarz/public/admin.php">Dodaj wydarzenie</a>';
 
                     $mail = new Mail();
                     $mail->valueMail($recipment, $subject, $body);
@@ -377,16 +478,24 @@ FORM_MARKUP;
         }
 
         return <<<CONFIRM_DELETE
-        <form action="confirmdelete.php" method="post">
-            <h2>Czy napewno chcesz usunąć "$event->title"?</h2>
-            <p>Tej operacji nie można cofnąć</p>
-            <p>
-                <input type="submit" name="confirm_delete" value="Tak, usuń to wydarzenie">
-                <input type="submit" name="confirm_delete" value="Nie usuwaj">
+        <div class="content">
+        <form class="app-form" action="confirmdelete.php" method="post">
+            <h4 class="center-align">Czy napewno chcesz usunąć: <span class="teal-text text-lighten-2">$event->title</span>?</h4>
+            <br>
+            <p class="center-align indigo-text text-lighten-2 light-font">Tej operacji nie można cofnąć!</p>
+            
+            <div class="center-login">
+                <div class="input-field">
+                    <button class="waves-effect waves-light btn blue-grey darken-2 btn padding-1" type="submit" name="confirm_delete" value="Tak, usuń to wydarzenie"><i class="material-icons left">delete</i>Tak, usuń to wydarzenie</button>
+                </div>
+                <div class="input-field">
+                    <a class="white-text waves-effect waves-light btn red accent-2 padding-1" href="./"><i class="material-icons left">cancel</i>Anuluj</a>
+                 </div>
                 <input type="hidden" name="event_id" value="$event->id">
                 <input type="hidden" name="token" value="$_SESSION[token]">
-            </p>
+            </div>
         </form>
+</div>
 CONFIRM_DELETE;
     }
 
@@ -395,23 +504,36 @@ CONFIRM_DELETE;
     public function displayFormAddUser(){
         $submit = 'Dodaj użytkownika';
         return <<<FORM_ADDUSER
-        <form action="assets/inc/process.inc.php" method="post">
-            <legend>$submit</legend>
-            <p>
+        <form class="app-form" action="assets/inc/process.inc.php" method="post" autocomplete="off">
+            <h3 class="center-align">$submit</h3>
+            <div class="input-field">
+                <i class="material-icons prefix indigo-text text-lighten-2">account_box</i>
+                <input class="validate" type="text" name="user_name" id="user_name" value="" autocomplete="off">
                 <label for="user_name">Nazwa użytkownika</label>
-                <input type="text" name="user_name" id="user_name">
+            </div>
+            <div class="input-field">
+                <i class="material-icons prefix indigo-text text-lighten-2">email</i>
+                <input class="validate" type="text" name="user_email" id="user_email" autocomplete="off">
                 <label for="user_email">E-mail użytkownika</label>
-                <input type="text" name="user_email" id="user_email">
+            </div>
+            <div class="input-field">
+                <i class="material-icons prefix indigo-text text-lighten-2">fingerprint</i>
+                <input class="validate" type="password" name="user_pass" id="user_pass" autocomplete="off">
                 <label for="user_pass">Hasło</label>
-                <input type="password" name="user_pass" id="user_pass">
+            </div>
+            <div class="input-field">
+                <i class="material-icons prefix indigo-text text-lighten-2">fingerprint</i>
+                <input class="validate" type="password" name="user_pass_confirm" id="user_pass_confirm" autocomplete="off">
                 <label for="user_pass_confirm">Potwierdź hasło</label>
-                <input type="password" name="user_pass_confirm" id="user_pass_confirm">
-                <br>
-                <input type="hidden" name="token" value="$_SESSION[token]" />
-                <input type="hidden" name="action" value="add_user" />
-                <input type="submit" name="event_submit" value="$submit" />
-                lub <a href="./">anuluj</a>
-            </p>
+            </div>
+            <input type="hidden" name="token" value="$_SESSION[token]" />
+            <input type="hidden" name="action" value="add_user" />
+            <div class="center-login">
+            <div class="col s7">
+                <button class="waves-effect waves-light btn padding-1" name="event_submit" value="$submit"><i class="material-icons left">send</i>$submit</button>
+                <button class="waves-effect waves-light btn red accent-2 padding-1"><i class="material-icons left">cancel</i><a class="white-text" href="./">Anuluj</a></button>
+            </div>
+        </div>
         </form>
 FORM_ADDUSER;
     }
