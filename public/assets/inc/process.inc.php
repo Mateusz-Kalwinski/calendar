@@ -26,6 +26,11 @@ define('ACTIONS', array(
             'object' => 'Admin',
             'method' => 'processLogout',
             'header' => 'Location: ../../login.php'
+        ),
+        'add_user' => array(
+            'object' => 'Calendar',
+            'method' => 'processFormAddUser',
+            'header' => 'Location: ../../'
         )
     )
 );
