@@ -20,7 +20,7 @@
 //
 //$hash3 = $obj->testSaltedHash('test', $hash2);
 //
-//echo "skrót \$hash3 bez ciągu zaburzającego:<br />",$hash3, "<br /><br />"
+//echo "skrót \$hash3 bez ciągu zaburzającego:<br />",$hash3, "<br /><br />";
 //
 //$pass = $obj->testSaltedHash('admin');
 //echo "skrót \$pass bez ciągu zaburzającego:<br />",$pass, "<br /><br />";
