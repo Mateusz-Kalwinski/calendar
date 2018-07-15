@@ -193,51 +193,51 @@ class Calendar extends DB_Connect{
             <div class="eventV">
                 <h3 class="center-align">Szczegóły wezwania</h3>
                     <div class="row">
-                        <div class="col s4 m5 l2">
+                        <div class="col s6 m5 l2">
                             <p class="teal-text text-lighten-2 ">Nazwa wezwania:</p>
                         </div>
-                        <div class="col s8 m7 l10">
+                        <div class="col s6 m7 l10">
                             <p class="indigo-text text-lighten-2">$event->title</p>
                         </div>
                         
-                        <div class="col s4 m5 l2">
+                        <div class="col s6 m5 l2">
                             <p class="teal-text text-lighten-2 ">Data rozpoczęcia: </p>
                         </div>
-                        <div class="col s8 m7 l10">
+                        <div class="col s6 m7 l10">
                             <p class="indigo-text text-lighten-2">$date_start $start</p>
                         </div>
                         
-                        <div class="col s4 m5 l2">
+                        <div class="col s6 m5 l2">
                             <p class="teal-text text-lighten-2 ">Data zakończenia: </p>
                         </div>
-                        <div class="col s8 m7 l10">
+                        <div class="col s6 m7 l10">
                             <p class="indigo-text text-lighten-2">$date_end $end</p>
                         </div>
                         
-                        <div class="col s4 m5 l2">
+                        <div class="col s6 m5 l2">
                             <p class="teal-text text-lighten-2 ">Adres początkowy: </p>
                         </div>
-                        <div class="col s8 m7 l10">
+                        <div class="col s6 m7 l10">
                             <p class="indigo-text text-lighten-2">$event->from</p>
                         </div>
                         
-                        <div class="col s4 m5 l2">
+                        <div class="col s7 m5 l2">
                             <p class="teal-text text-lighten-2 ">Adres zakończenia: </p>
                         </div>
-                        <div class="col s8 m7 l10">
+                        <div class="col s5 m7 l10">
                             <p class="indigo-text text-lighten-2">$event->to</p>
                         </div>
                         
-                        <div class="col s4 m5 l2">
+                        <div class="col s6 m5 l2">
                             <p class="teal-text text-lighten-2 ">Opis: </p>
                         </div>
-                        <div class="col s8 m7 l10">
+                        <div class="col s6 m7 l10">
                             <p class="indigo-text text-lighten-2">$event->description</p>
                         </div>
-                        <div class="col s4 m5 l2">
+                        <div class="col s6 m5 l2">
                             <p class="teal-text text-lighten-2 ">Wezwanie NFZ:</p>
                         </div>
-                        <div class="col s8 m7 l10">
+                        <div class="col s6 m7 l10">
                             <p class="indigo-text text-lighten-2">$isNFZ</p>
                         </div>
                     </div>
@@ -296,6 +296,11 @@ ADMIN_OPTIONS;
             if ( !is_object($event) ) { return NULL; }
 
             $submit = "Edytuj wydarzenie";
+        }else{
+            $explode_event_start[0] = '';
+            $explode_event_start[1] = '';
+            $explode_event_end[0] = '';
+            $explode_event_end[1] = '';
         }
         return <<<FORM_MARKUP
     <form class="app-form" action="assets/inc/process.inc.php" method="post" autocomplete="off">
@@ -420,18 +425,38 @@ FORM_MARKUP;
             $stmt->bindParam(":NFZ", $NFZ, PDO::PARAM_STR);
             $stmt->execute();
             $stmt->closeCursor();
-            if (empty($_POST['event_id'])){
-                $recipment = 'mateucz27@gmail.com';
-                $subject = 'Dodano wydarzenie: ' . $title;
-                $body = '<p>przykładowy tekst podczas dodawania wydarzenia</p>';
-            }else{
-                $recipment = 'mateucz27@gmail.com';
-                $subject = 'Edytowano wydarzenie: ' . $title;
-                $body = '<h1>przykłodowy tekst podczas edycji wydarzenia</h1>';
-            }
-            $mail = new Mail();
-            $mail->valueMail($recipment, $subject, $body);
 
+            $user_obj = new Users();
+            $users_email = $user_obj->getUsers();
+            
+            if (empty($_POST['event_id'])){
+
+                foreach ($users_email as $value){
+                    $recipment = $value['user_email'];
+                    $subject = 'Dodano wezwanie: ' . $title;
+                    $body = '<p>Data rozpoczęcia: '.$start.'</p>
+                            <p>Data zakończnia: '.$end.'</p>
+                            <p>Adres początkowy: '.$from.'</p>
+                            <p>Adres zakończenia: '.$to.'</p>
+                            <p>Opis: '.$desc.'</p>
+                            <p>Wezwanie NFZ: '.$NFZ.'</p>';
+                    $mail = new Mail();
+                    $mail->valueMail($recipment, $subject, $body);
+                }
+            }else{
+                foreach ($users_email as $value){
+                    $recipment = $value['user_email'];
+                    $subject = 'Edytowano wezwanie: ' . $title;
+                    $body = '<p>Data rozpoczęcia: '.$start.'</p>
+                            <p>Data zakończnia: '.$end.'</p>
+                            <p>Adres początkowy: '.$from.'</p>
+                            <p>Adres zakończenia: '.$to.'</p>
+                            <p>Opis: '.$desc.'</p>
+                            <p>Wezwanie NFZ: '.$NFZ.'</p>';
+                    $mail = new Mail();
+                    $mail->valueMail($recipment, $subject, $body);
+                }
+            }
             return TRUE;
         }catch (Exception $e){
             return $e->getMessage();
@@ -456,16 +481,17 @@ FORM_MARKUP;
                     $stmt->execute();
                     $stmt->closeCursor();
 
-                    $recipment = 'mateucz27@gmail.com';
-                    $subject = 'Usunięto wydarzenie: ' . $event->title;
-                    $body = '<h1>Wydarzenie zostało usunięte! </h1>
-                             <p>Możesz dodać wydarzenie wchodząc w ten link</p>
-                             <br>
-                             <a href="http://127.0.0.1/kalendarz/public/admin.php">Dodaj wydarzenie</a>';
+                    $user_obj = new Users();
+                    $users_email = $user_obj->getUsers();
 
-                    $mail = new Mail();
-                    $mail->valueMail($recipment, $subject, $body);
 
+                    foreach ($users_email as $value){
+                        $recipment = $value['user_email'];
+                        $subject = 'Usunięto wezwanie: ' . $event->title;
+                        $body = 'wezwanie zostało usunięte';
+                        $mail = new Mail();
+                        $mail->valueMail($recipment, $subject, $body);
+                    }
                     header("Location: ./");
                     return;
                 }catch (Exception $e){
