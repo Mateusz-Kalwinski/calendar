@@ -12,8 +12,11 @@ include_once 'assets/common/header.inc.php';
 
 if (isset($_SESSION['user'])) {
 
-    $test = new Users();
-    $test->buildUsers();
+    $users = new Users();
+
+    echo '<div class="container">';
+    $users->buildUsers();
+    echo '</div>';
 }
 else{
     header("Location: login.php");
