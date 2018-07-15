@@ -27,12 +27,17 @@ $css_files[] = 'materialize.css';
 include_once 'assets/common/header.inc.php';
 
 $cal = new Calendar($dbo);
+if (!isset($_SESSION['user'])){
+    header('Location: login.php');
+    exit();
+}
 
 ?>
 
 <div class="container">
-    <?=$cal->displayEvent($id)?>
-    <a href="./">Kalendarz</a>
+    <div class="content">
+        <?=$cal->displayEvent($id)?>
+    </div>
 </div>
 
 <?php
