@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-//include_once 'class.DB_Connect.inc.php';
+include_once 'class.DB_Connect.inc.php';
 class Admin extends DB_Connect{
 
     private $_saltLength = 7;
@@ -74,9 +74,8 @@ class Admin extends DB_Connect{
 
         return $salt . sha1($salt . $string);
     }
-//      metoda stosowana w pliku test.php
 
-//    public function testSaltedHash($string, $salt=NULL){
-//        return $this->_getSaltedHash($string, $salt);
-//    }
+    public function SaltedHash($string, $salt=NULL){
+        return $this->_getSaltedHash($string, $salt);
+    }
 }
