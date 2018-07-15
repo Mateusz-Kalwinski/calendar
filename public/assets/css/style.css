@@ -5,11 +5,13 @@ body{
     min-height: 100vh;
     background-repeat: no-repeat;
     background-position: center center;
+    font-weight: 300;
 }
 
 nav {
     height: 100px !important;
     line-height: 100px !important;
+    font-weight: 400 !important;
 }
 
 nav form{
@@ -34,11 +36,14 @@ table{
 }
 
 td{
-    height: 120px !important;
-    width: 150px !important;
     text-align: center !important;
     border-radius: 0px !important;
     position: relative;
+}
+
+.size{
+    height: 120px !important;
+    width: 150px !important;
 }
 .event {
     font-weight: 300 !important;
@@ -150,8 +155,8 @@ input:-webkit-autofill:focus {
 }
 
 @media (max-width: 466px) {
-    .forms{
-        width: 90%;
+    .form-login {
+        width: 80%;
     }
 }
 
