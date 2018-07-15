@@ -12,6 +12,7 @@ class Event
     public $end;
     public $from;
     public $to;
+    public $NFZ;
 
     public function __construct($event=NULL)
     {
@@ -24,6 +25,7 @@ class Event
             $this->end = $event['event_end'];
             $this->from = $event['event_from'];
             $this->to = $event['event_to'];
+            $this->NFZ = $event['NFZ'];
 
         }
         else
@@ -35,6 +37,7 @@ class Event
             $this->end = "";
             $this->from = "";
             $this->to = "";
+            $this->NFZ = "";
         }
     }
 
